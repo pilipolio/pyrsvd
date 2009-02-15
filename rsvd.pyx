@@ -1,7 +1,7 @@
 """
 This module provides a regularized singular value decomposition solver used
-to compute a low-rank approximation of a huge partial matrix
-(i.e. a matrix with lots of missing valus).
+to compute low-rank approximations of a large partial matrices
+(i.e. a matrices with lots of missing valus).
 
 R ~ U*V' where R: MxC, U: MxK and V: CxK. M is the number of movies,
 C is the number of clients
@@ -48,8 +48,8 @@ rating_t=np.dtype('H,I,B')
 
 class RSVD(object):
     """A regularized singular value decomposition solver.
-    The solver is used to compute the low-rank approximation of huge partial
-    matrizes.
+    The solver is used to compute the low-rank approximation of large partial
+    matrices.
 
     To train a model (i.e. a factorizatoin) use the following factory method:
     > model=RSVD.train(ratings,(17770,480189))
@@ -146,6 +146,10 @@ class RSVD(object):
         and training stops as soon as the relative improvement on the validation
         set is smaller than minImprovement.
         If probeArray is None, maxEpochs are performed.
+
+	The complexity of the algorithm is O(n*k*m), where n is the number of
+	non-missing values in R (i.e. the size of the ratingArray), k is the
+	number of factors and m is the number of epochs to be performed. 
 
         NOTE: It is assumed, that the ratingsArray is proper shuffeld. No
         further randomization of the training data is performed.
