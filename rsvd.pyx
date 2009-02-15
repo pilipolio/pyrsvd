@@ -22,7 +22,9 @@ It has to be noted, however, that the module assumes that the training data
 is properly shuffeled and does not attempt to randomize the order in which
 the training data is processed.
 
-@version: $Id$
+@version: 0.1
+@requires: U{Python 2.5 <http://www.python.org/download/>} or later,
+           U{Numpy 1.1 <http://www.numpy.org/>} or later.
 """
 cimport numpy as np
 import numpy as np
