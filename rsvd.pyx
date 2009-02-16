@@ -27,9 +27,11 @@ the training data is processed.
            U{Numpy 1.1 <http://www.numpy.org/>} or later.
 """
 cimport numpy as np
+
 import numpy as np
 import sys
 import pickle
+import getopt
 
 from time import time
 from os.path import exists
@@ -37,7 +39,7 @@ from os.path import exists
 
 __version__="0.1"
 __author__="peter.prettenhofer@gmail.com"
-__license__="bsd"
+__license__="mid"
 
 globalAvgRating=3.603304257811724
 randomNoise=0.005
@@ -351,4 +353,5 @@ cdef double probe(Rating *probeRatings, double *dataU, \
         err=(<double>r.rating) - predictClip(uOffset,vOffset, dataU,dataV,factors)
         sumSqErr+=err*err
     return np.sqrt(sumSqErr/numRatings)
+
 
