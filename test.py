@@ -6,15 +6,19 @@
 #log#-----------------------------------------------------------------------
 import numpy as np
 
-f=open('../pyflix-0.1/bin/training_set/ratings.arr','r')
+f=open('data/ratings.arr','r')
 rating=np.dtype('H,I,B')
 print 'load ratings'
 ratings=np.fromfile(f,dtype=rating)
 
 f.close()
-f=open('../pyflix-0.1/bin/probe_set/probe_ratings.arr','r')
+f=open('data/probe_ratings.arr','r')
 probeRatings=np.fromfile(f,dtype=rating)
 f.close()
 from rsvd import RSVD
-model=RSVD.train(5,ratings,(17770,480189),probeRatings,20,randomize=False)
+model=RSVD.train(128,ratings,(17770,480189),probeRatings,150,randomize=False)
+print "model trained..."
+
+model.save("models/t_128_001_011_150")
+
 

@@ -34,6 +34,7 @@ import pickle
 from time import time
 from os.path import exists
 
+
 __version__="0.1"
 __author__="peter.prettenhofer@gmail.com"
 __license__="bsd"
@@ -94,15 +95,16 @@ class RSVD(object):
         if not exists(model_dir_path):
             raise ValueError("Directory %s does not exist." % model_dir_path)
 
-        if self.u:
+        try:
             self.u.tofile(model_dir_path+"/u.arr")
-        if self.v:
             self.v.tofile(model_dir_path+"/v.arr")
-            
-        f=open(model_dir_path+"/model",'w+')
-        pickle.dump(f,self)
-        f.close()
-            
+            f=open(model_dir_path+"/model",'w+')
+            pickle.dump(self,f)
+            f.close()
+        except AttributeError, e:
+            print "Save Error: Model has not been trained.",e
+        except IOError, e:
+            print "IO Error: ",e
 
     @classmethod
     def load(cls,model_dir_path):
@@ -117,6 +119,7 @@ class RSVD(object):
                  reshape((model.num_users,model.factors))
         model.u=np.fromfile(model_dir_path+"/u.arr").\
                  reshape((model.num_movies,model.factors))
+        return model
 
     def __call__(self,movie_id,user_id):
         """Predict the rating of user i and movie j.
@@ -152,29 +155,22 @@ class RSVD(object):
 	non-missing values in R (i.e. the size of the ratingArray), k is the
 	number of factors and m is the number of epochs to be performed. 
 
-        NOTE: It is assumed, that the ratingsArray is proper shuffeld. No
-        further randomization of the training data is performed.
+        NOTE: It is assumed, that the ratingsArray is proper shuffeld. 
+        If the randomize flag is set the ratingArray is shuffeled every 10th
+        epoch. 
 
         --------------------
 
         :Parameters:
             factors: the number of latent variables. 
-            ratingsArray: A numpy record array containing the ratings. \
-            each rating is a triple (uint16 movieID,uint32 userID,uint8 rating).
-            probeArray: A numpy record array containing the ratings \
-            of the validation set. 
-            dims: A tuple (numMovies,numUsers). \
-            It is used to determine the size of the matrix factors U and V. 
-            maxEpochs: The maximum number of gradient descent \
-            iterations to perform
-            minImprovement: The minimum improvement in \
-            validation set error. This triggers early stopping. 
-            learnRate: The step size in parameter space. \
-            Set with caution: if the lr is too high it might pass \
-            over (local) minima in the error function; \
-            if the lr is too low the algorithm hardly progresses. 
-            regularization: The regularization term. \
-            It penalizes the magnitude of the parameters. 
+            ratingsArray: A numpy record array containing the ratings. Eeach rating is a triple (uint16 movieID,uint32 userID,uint8 rating).
+            probeArray: A numpy record array containing the ratings of the validation set. 
+            dims: A tuple (numMovies,numUsers). It is used to determine the size of the matrix factors U and V. 
+            maxEpochs: The maximum number of gradient descent iterations to perform
+            minImprovement: The minimum improvement in validation set error. This triggers early stopping. 
+            learnRate: The step size in parameter space.Set with caution: if the lr is too high it might pass over (local) minima in the error function; if the lr is too low the algorithm hardly progresses. 
+            regularization: The regularization term. It penalizes the magnitude of the parameters. 
+            randomize: Whether or not the ratingArray should be shuffeled.
 
         """
 
@@ -201,6 +197,7 @@ class RSVD(object):
             .reshape(model.num_users,model.factors)+initVal
         
         __trainModel(model,ratingsArray,probeArray,randomize=randomize)
+        return model
 
 
 def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
@@ -236,6 +233,12 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     cdef double *dataU=<double *>U.data
     cdef double *dataV=<double *>V.data
     
+    
+    
+    out.write("########################################\n")
+    out.write("             Factorizing                \n")
+    out.write("########################################\n")
+    out.write("factors=%d, epochs=%d, lr=%f, reg=%f\n" % (K,max_epochs,lr,reg))
     if early_stopping:
         oldProbeErr=probe(<Rating *>&(probeRatings[0]),\
                           dataU,dataV,K,probeRatings.shape[0])
@@ -243,11 +246,7 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     
     trainErr=probe(<Rating *>&(ratings[0]), dataU, dataV,K,n)
     out.write("Init TRMSE: %f\n" % trainErr)
-    
-    out.write("########################################\n")
-    out.write("             Factorizing                \n")
-    out.write("########################################\n")
-    out.write("factors=%d, epochs=%d, lr=%f, reg=%f\n" % (K,max_epochs,lr,reg))
+    out.write("----------------------------------------\n")
     out.write("epoche\ttrain err\tprobe err\telapsed time\n")
 
     for epoch from 0 <= epoch < max_epochs:
@@ -267,6 +266,7 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
                 out.write("Early stopping\nRelative improvement %f\n" \
                           % (oldProbeErr-probeErr))
                 break
+            oldProbeErr=probeErr
         out.write("%d\t%f\t%f\t%f\n"%(epoch,trainErr,probeErr,time()-t1))
 
 # The Rating struct. 
