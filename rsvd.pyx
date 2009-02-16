@@ -104,8 +104,8 @@ class RSVD(object):
         f.close()
             
 
-    @staticmethod
-    def load(model_dir_path):
+    @classmethod
+    def load(cls,model_dir_path):
         """Loads the model from the given directory.
         :Parameters:
         model_dir_path: The directory that contains the model. 
@@ -136,10 +136,11 @@ class RSVD(object):
             r=1.0
         return r
 
-    @staticmethod
-    def train(factors,ratingsArray,dims,probeArray=None,\
+    @classmethod
+    def train(cls,factors,ratingsArray,dims,probeArray=None,\
                   maxEpochs=50,minImprovement=0.000001,\
-                  learnRate=0.001,regularization=0.011):
+                  learnRate=0.001,regularization=0.011,\
+                  randomize=False):
         """Factorizes the partial rating matrix.
 
         If a validation set (probeArray) is given, early stopping is performed
@@ -199,14 +200,17 @@ class RSVD(object):
             -randomNoise,randomNoise, model.num_users*model.factors)\
             .reshape(model.num_users,model.factors)+initVal
         
-        _trainModel(model,ratingsArray,probeArray)
+        __trainModel(model,ratingsArray,probeArray,randomize=randomize)
 
 
-def _trainModel(model,ratingsArray,probeArray):
+def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     """Trains the model on the given rating data.
     If probeArray is not None the error on the probe set is
     determined after each iteration and early stopping is done
     if the error on the probe set starts to increase.
+
+    If randomize is True the ratingsArray is shuffled every 10th epoch.
+    Shuffling may take a while.
     """
     cdef object[Rating] ratings=ratingsArray
     early_stopping=False
@@ -235,20 +239,24 @@ def _trainModel(model,ratingsArray,probeArray):
     if early_stopping:
         oldProbeErr=probe(<Rating *>&(probeRatings[0]),\
                           dataU,dataV,K,probeRatings.shape[0])
-        print "Init PRMSE:",oldProbeErr
+        out.write("Init PRMSE: %f\n" % oldProbeErr)
     
     trainErr=probe(<Rating *>&(ratings[0]), dataU, dataV,K,n)
-    print "Init TRMSE:",trainErr
+    out.write("Init TRMSE: %f\n" % trainErr)
     
-    print "########################################"
-    print "             Factorizing                "
-    print "########################################"
-    print "factors=",K, " epochs=", \
-        max_epochs, " lr=",lr," reg=",reg
-    print "epoche\ttrain err\tprobe err\telapsed time"    
+    out.write("########################################\n")
+    out.write("             Factorizing                \n")
+    out.write("########################################\n")
+    out.write("factors=%d, epochs=%d, lr=%f, reg=%f\n" % (K,max_epochs,lr,reg))
+    out.write("epoche\ttrain err\tprobe err\telapsed time\n")
 
     for epoch from 0 <= epoch < max_epochs:
         t1=time()
+        if randomize and epoch%10==0:
+            out.write("Shuffling training data\t")
+            out.flush()
+            np.random.shuffle(ratings)
+            out.write("Done\n")
         trainErr=train(<Rating *>&(ratings[0]), dataU, \
                             dataV, K,n, reg,lr)
 
@@ -256,11 +264,10 @@ def _trainModel(model,ratingsArray,probeArray):
             probeErr=probe(<Rating *>&(probeRatings[0]),dataU, \
                                 dataV,K,probeRatings.shape[0])
             if oldProbeErr-probeErr < model.min_improvement:
-                print "Early stopping\nRelative improvement ",\
-                (oldProbeErr-probeErr)
+                out.write("Early stopping\nRelative improvement %f\n" \
+                          % (oldProbeErr-probeErr))
                 break
-        print "%d\t%f\t%f\t%f"%\
-                (epoch,trainErr,probeErr,time()-t1)
+        out.write("%d\t%f\t%f\t%f\n"%(epoch,trainErr,probeErr,time()-t1))
 
 # The Rating struct. 
 cdef struct Rating:
