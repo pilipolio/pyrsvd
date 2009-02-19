@@ -29,13 +29,14 @@ further information.
 
 Options: 
   -h, --help\tPrint this help
-  -v, --verbose\tVerbose output
-  -l, --lr\tLearn rate [default: 0.001]
-  -r, --reg\tRegularization parameter [default: 0.11]
+  -f <int>\tThe number of latent factors to compute. 
+  -l <float>\tLearn rate [default: 0.001]
+  -r <float>\tRegularization parameter [default: 0.11]
   --probe <file>\tEstimate error on probe set. 
 \t\t<file> contains the probe set in a numpy record array.
 \t\tIf defined, early stopping is turned on
   --maxepochs\tThe max number of epochs to perform
+  --randomize\tShuffle the training data every 10th epoch.
 
 For bug reporting, please mail to:
 <peter.prettenhofer@gmail.com>
@@ -47,19 +48,17 @@ def main(argv=None):
         argv = sys.argv
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "hl:r:f:e:R", \
-                                           ["help","probe=","lr=","reg=",\
-                                                "factors=","maxepochs=",\
+            opts, args = getopt.getopt(argv[1:], "hl:r:f:", \
+                                           ["help","probe=","maxepochs=",\
                                                 "randomize"])
         except getopt.error, msg:
              raise Usage(msg)
         
-        output = None
+        
         lr=0.001
         reg=0.011
         probeFile=None
         ratingsFile=None
-        output=None
         max_epochs=100
         randomize=False
         factors=10
@@ -69,15 +68,15 @@ def main(argv=None):
                 sys.exit()
             elif o in ("--probe"):
                 probeFile=a
-            elif o in ("-l","--lr"):
+            elif o in ("-l"):
                 lr=float(a)
-            elif o in ("-r","--reg"):
+            elif o in ("-r"):
                 reg=float(a)
-            elif o in ("-f","--factors"):
+            elif o in ("-f"):
                 factors=int(a)
-            elif o in ("-e","--maxepochs"):
+            elif o in ("--maxepochs"):
                 max_epochs=int(a)
-            elif o in ("-R","--randomize"):
+            elif o in ("--randomize"):
                 randomize=True
             else:
                 raise Usage("unhandled option")
