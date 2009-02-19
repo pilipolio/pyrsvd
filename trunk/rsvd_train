@@ -89,10 +89,14 @@ def main(argv=None):
             nmovies=int(args[1])
             nusers=int(args[2])
             output=args[3]
+            print >>sys.stdout, "Loading training data...",
             ratingsArray=np.fromfile(ratingsFile,dtype=rating_t)
+            print >>sys.stdout, "done."
             probeArray=None
             if probeFile:
+                print >>sys.stdout, "Loading probe data...",
                 probeArray=np.fromfile(file(probeFile),dtype=rating_t)
+                print >>sys.stdout, "done."
             model=RSVD.train(factors,ratingsArray,(nmovies,nusers),\
                              probeArray=probeArray,\
                              maxEpochs=max_epochs,\
