@@ -143,7 +143,7 @@ class RSVD(object):
 
     @classmethod
     def train(cls,factors,ratingsArray,dims,probeArray=None,\
-                  maxEpochs=50,minImprovement=0.000001,\
+                  maxEpochs=100,minImprovement=0.000001,\
                   learnRate=0.001,regularization=0.011,\
                   randomize=False):
         """Factorizes the partial rating matrix.
@@ -165,14 +165,24 @@ class RSVD(object):
 
         :Parameters:
             factors: the number of latent variables. 
-            ratingsArray: A numpy record array containing the ratings. Eeach rating is a triple (uint16 movieID,uint32 userID,uint8 rating).
-            probeArray: A numpy record array containing the ratings of the validation set. 
-            dims: A tuple (numMovies,numUsers). It is used to determine the size of the matrix factors U and V. 
-            maxEpochs: The maximum number of gradient descent iterations to perform
-            minImprovement: The minimum improvement in validation set error. This triggers early stopping. 
-            learnRate: The step size in parameter space.Set with caution: if the lr is too high it might pass over (local) minima in the error function; if the lr is too low the algorithm hardly progresses. 
-            regularization: The regularization term. It penalizes the magnitude of the parameters. 
-            randomize: Whether or not the ratingArray should be shuffeled.
+            ratingsArray: A numpy record array containing the ratings.
+                          Each rating is a triple (uint16,uint32,uint8). 
+            dims: A tuple (numMovies,numUsers).
+                  It is used to determine the size of the matrix factors
+                  U and V.
+            probeArray: A numpy record array containing the ratings
+                        of the validation set. (None)
+            maxEpochs: The maximum number of gradient descent iterations
+                       to perform. (100)
+            minImprovement: The minimum improvement in validation set error. \
+            This triggers early stopping. (0.000001)
+            learnRate: The step size in parameter space.
+                       Set with caution: if the lr is too high it might
+                       pass over (local) minima in the error function;
+                       if the lr is too low the algorithm hardly progresses. (0.001) 
+            regularization: The regularization term.
+                            It penalizes the magnitude of the parameters. (0.011)
+            randomize: Whether or not the ratingArray should be shuffeled. (False)
 
         """
 
@@ -235,22 +245,23 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     cdef double *dataU=<double *>U.data
     cdef double *dataV=<double *>V.data
     
-    
-    
+        
     out.write("########################################\n")
     out.write("             Factorizing                \n")
     out.write("########################################\n")
     out.write("factors=%d, epochs=%d, lr=%f, reg=%f\n" % (K,max_epochs,lr,reg))
+    out.flush()
     if early_stopping:
         oldProbeErr=probe(<Rating *>&(probeRatings[0]),\
                           dataU,dataV,K,probeRatings.shape[0])
         out.write("Init PRMSE: %f\n" % oldProbeErr)
-    
+        out.flush()
+
     trainErr=probe(<Rating *>&(ratings[0]), dataU, dataV,K,n)
     out.write("Init TRMSE: %f\n" % trainErr)
     out.write("----------------------------------------\n")
     out.write("epoche\ttrain err\tprobe err\telapsed time\n")
-
+    out.flush()
     for epoch from 0 <= epoch < max_epochs:
         t1=time()
         if randomize and epoch%10==0:
