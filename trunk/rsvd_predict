@@ -64,7 +64,7 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "ho:i:", \
-                                           ["help"]
+                                           ["help"])
         except getopt.error, msg:
              raise Usage(msg)
         
@@ -82,8 +82,9 @@ def main(argv=None):
             else:
                 raise Usage("unhandled option")
         
-        if len(args) < 2:
+        if len(args) < 1:
             raise Usage("missing arguments")
+        model_dir=args[0]
         try:
             output=sys.stdout if output_file is "-" else open(output_file,'r')
             input_iterator=arrayIterFD(sys.stdin) if input is "-" \
@@ -92,7 +93,7 @@ def main(argv=None):
             model=RSVD.load(model_dir)
             for example in input_iterator:
                 output.write("%d\t%d\t%f\n"%(example[0],\
-                             example[1],model(example[0],example[1]))
+                             example[1],model(example[0],example[1])))
                         
         except Exception, e:
             print >>sys.stderr, "Error: ",e

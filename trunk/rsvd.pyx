@@ -123,7 +123,7 @@ class RSVD(object):
                  reshape((model.num_movies,model.factors))
         return model
 
-    def __call__(self,movie_id,user_id):
+    def __call__(self,movie_id,user_id,user_map=None):
         """Predict the rating of user i and movie j.
         The prediction is the dot product of the user
         and movie factors, resp.
@@ -132,8 +132,10 @@ class RSVD(object):
             movie_id: The raw movie id of the movie to be predicted.
             user_id: The <strong>mapped</strong> user id of the user. \
             The mapping is based on the sorted order of user ids \
-            in the training set. 
+            in the training set.
+            
         """
+        
         r=np.dot(self.u[movie_id-1],self.v[user_id])
         if r>5.0:
             r=5.0
