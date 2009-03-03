@@ -283,6 +283,7 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
                 break
             oldProbeErr=probeErr
         out.write("%d\t%f\t%f\t%f\n"%(epoch,trainErr,probeErr,time()-t1))
+        out.flush()
 
 # The Rating struct. 
 cdef struct Rating:
