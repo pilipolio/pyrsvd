@@ -51,14 +51,16 @@ rating_t=np.dtype('H,I,B')
 
 class RSVD(object):
     """A regularized singular value decomposition solver.
+    
     The solver is used to compute the low-rank approximation of large partial
     matrices.
 
-    To train a model (i.e. a factorizatoin) use the following factory method:
-    > model=RSVD.train(ratings,(17770,480189))
+    To train a model (i.e. a factorization) use the following
+    factory method:
+    > model=RSVD.train(10,ratings,(17770,480189))
 
     Where ratings is a numpy record array of data type ('H,I,B'), which
-    corresponds to (uint16,uint32,uint8). See rsvd.rating_t.
+    corresponds to (uint16,uint32,uint8). See `rsvd.rating_t`.
 
     To predict the rating of user i and movie j use:
     > model(j,i)
@@ -67,6 +69,7 @@ class RSVD(object):
 
     def __init__(self):
         """Default constructor.
+        
         Used in the train factory method.
         """
         pass
@@ -84,8 +87,11 @@ class RSVD(object):
         """Saves the model to the given directory.
         The method raises a ValueError if the directory does not exist
         or if there is already a model in the directory.
-        :Parameters:
-            model_dir_path: the directory of the serialized model.
+
+        Parameters
+        ----------
+        model_dir_path : str
+            The directory of the serialized model.
         
         """
         if exists(model_dir_path+'/v.arr') or \
@@ -111,8 +117,15 @@ class RSVD(object):
     @classmethod
     def load(cls,model_dir_path):
         """Loads the model from the given directory.
-        :Parameters:
-        model_dir_path: The directory that contains the model. 
+
+        Parameters
+        ----------
+        model_dir_path : str
+            The directory that contains the model.
+
+        Returns
+        -------
+        describe : 
         """
         f=file(model_dir_path+"/model")
         model=pickle.load(f)
@@ -128,11 +141,20 @@ class RSVD(object):
         The prediction is the dot product of the user
         and movie factors, resp.
         The result is clipped in the range [1.0,5.0].
-        :Parameters:
-            movie_id: The raw movie id of the movie to be predicted.
-            user_id: The <strong>mapped</strong> user id of the user. \
-            The mapping is based on the sorted order of user ids \
+        
+        Parameters
+        ----------
+        movie_id : int
+            The raw movie id of the movie to be predicted.
+        user_id : int
+            The mapped user id of the user. 
+            The mapping is based on the sorted order of user ids
             in the training set.
+
+        Returns
+        -------
+        describe : float
+            The predicted rating.
             
         """
         
@@ -152,39 +174,49 @@ class RSVD(object):
 
         If a validation set (probeArray) is given, early stopping is performed
         and training stops as soon as the relative improvement on the validation
-        set is smaller than minImprovement.
-        If probeArray is None, maxEpochs are performed.
+        set is smaller than `minImprovement`.
+        If `probeArray` is None, `maxEpochs` are performed.
 
 	The complexity of the algorithm is O(n*k*m), where n is the number of
-	non-missing values in R (i.e. the size of the ratingArray), k is the
+	non-missing values in R (i.e. the size of the `ratingArray`), k is the
 	number of factors and m is the number of epochs to be performed. 
 
-        NOTE: It is assumed, that the ratingsArray is proper shuffeld. 
-        If the randomize flag is set the ratingArray is shuffeled every 10th
-        epoch. 
-
-        --------------------
-
-        :Parameters:
-            factors: the number of latent variables. 
-            ratingsArray: A numpy record array containing the ratings.
-                          Each rating is a triple (uint16,uint32,uint8). 
-            dims: A tuple (numMovies,numUsers).
-                  It is used to determine the size of the matrix factors
-                  U and V.
-            probeArray: A numpy record array containing the ratings
-                        of the validation set. (None)
-            maxEpochs: The maximum number of gradient descent iterations
-                       to perform. (100)
-            minImprovement: The minimum improvement in validation set error. \
+        Parameters
+        ----------
+        factors: int
+            The number of latent variables. 
+        ratingsArray : ndarray
+            A numpy record array containing the ratings.E
+            Each rating is a triple (uint16,uint32,uint8). 
+        dims : tuple
+            A tuple (numMovies,numUsers).
+            It is used to determine the size of the
+            matrix factors U and V.
+        probeArray : ndarray
+            A numpy record array containing the ratings
+            of the validation set. (None)
+        maxEpochs : int
+            The maximum number of gradient descent iterations
+            to perform. (100)
+        minImprovement : float
+            The minimum improvement in validation set error.
             This triggers early stopping. (0.000001)
-            learnRate: The step size in parameter space.
-                       Set with caution: if the lr is too high it might
-                       pass over (local) minima in the error function;
-                       if the lr is too low the algorithm hardly progresses. (0.001) 
-            regularization: The regularization term.
-                            It penalizes the magnitude of the parameters. (0.011)
-            randomize: Whether or not the ratingArray should be shuffeled. (False)
+        learnRate : float
+            The step size in parameter space.
+            Set with caution: if the lr is too high it might
+            pass over (local) minima in the error function;
+            if the `lr` is too low the algorithm hardly progresses. (0.001) 
+        regularization : float
+            The regularization term.
+            It penalizes the magnitude of the parameters. (0.011)
+        randomize : {True,False}
+            Whether or not the ratingArray should be shuffeled. (False)
+
+        Note
+        ----
+        It is assumed, that the `ratingsArray` is proper shuffeld. 
+        If the randomize flag is set the `ratingArray` is shuffeled every 10th
+        epoch. 
 
         """
 
@@ -216,12 +248,33 @@ class RSVD(object):
 
 def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     """Trains the model on the given rating data.
-    If probeArray is not None the error on the probe set is
+    
+    If `probeArray` is not None the error on the probe set is
     determined after each iteration and early stopping is done
     if the error on the probe set starts to increase.
 
-    If randomize is True the ratingsArray is shuffled every 10th epoch.
-    Shuffling may take a while.
+    If `randomize` is True the `ratingsArray` is shuffled
+    every 10th epoch.
+
+    Parameters
+    ----------
+    model : RSVD
+        The model to be trained.
+    ratingsArray : ndarray
+        The numpy record array holding the rating data.
+    probeArray : ndarray
+        The numpy record array holding the validation data.
+    out : file
+        File to which debug msg should be written. (default stdout)
+    randomize : {True,False}
+        Whether or not the training data should be shuffeled every
+        10th iteration. 
+
+    Notes
+    -----
+
+    * Shuffling may take a while.
+    
     """
     cdef object[Rating] ratings=ratingsArray
     early_stopping=False
