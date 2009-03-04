@@ -1,3 +1,9 @@
+"""
+Test
+----
+This is a test
+"""
+
 #log# Automatic Logger file. *** THIS MUST BE THE FIRST LINE ***
 #log# DO NOT CHANGE THIS LINE OR THE TWO BELOW
 #log# opts = Struct({'__allownew': True, 'logfile': 'ipython_log.py'})

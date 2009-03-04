@@ -1,4 +1,17 @@
 """
+Datasets
+--------
+
+Netflix
+-------
+Currently, only pyflix converter implemented. 
+
+
+
+MovieLens
+---------
+Parses MovieLens data 
+
 
 """
 
@@ -57,9 +70,8 @@ class MovieLensDataset(Dataset):
     """The MovieLens dataset.
 
     There exist three different versions of the dataset:
-       1. 
-       2. 
-       *
+       1. asd
+       2. af
     see U{GroupLens <http://www.grouplens.org/>} for further information
     """
 
