@@ -30,7 +30,7 @@ Output is always textual (<movie_id>\t<user_id>\t<predicted_rating>\n)
 See <http://code.google.com/p/pyrsvd/> for 
 further information. 
 
-Options: 
+Options:
   -h, --help\tPrint this help
   -o <file>\tThe output file. If '-' or not set stdout is used.
   -i <file>\tThe input file. If '-' or not set stdin is used. 
