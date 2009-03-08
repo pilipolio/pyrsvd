@@ -31,14 +31,6 @@ __version__="0.1"
 __author__="peter.prettenhofer@gmail.com"
 __license__="mit"
 
-# constants
-
-# global initialization
-
-# exception classes
-# interface functions
-# classes
-
 class Dataset(object):
     """Dataset interface
     """
@@ -84,7 +76,7 @@ class MovieLensDataset(Dataset):
     @classmethod
     def loadDat(cls,file):
         """Loads the MovieLens dataset via the ratings.dat file. 
-        
+
         """
         if not exists(file):
             raise ValueError("%s file does not exist" % file)
@@ -92,6 +84,8 @@ class MovieLensDataset(Dataset):
         try:
             rows=[tuple(map(int,l.rstrip().split("::"))) for l in f.readlines()]
             n=len(rows)
+            
+            # define rating array (itemID,userID,rating)
             ratings=np.empty((n,),dtype=rating_t)
             for i,row in enumerate(rows):
                 ratings[i]=(row[1],row[0]-1,row[2])
@@ -103,6 +97,9 @@ class MovieLensDataset(Dataset):
             #map movieIDs
             for i,rec in enumerate(ratings):
                 ratings[i]['f0']=movieIDs.searchsorted(rec['f0'])+1
+
+            #original_movieIDs=movieIDs
+                
             movieIDs=np.unique(ratings['f0'])
             movieIDs.sort()
             return MovieLensDataset(movieIDs,userIDs,ratings)
@@ -133,8 +130,6 @@ class NetflixDataset(Dataset):
             return NetflixDataset(movieIDs,userIDs,ratings)
         finally:
             f.close()
-
-
 
 def main(prog_args):
     pass

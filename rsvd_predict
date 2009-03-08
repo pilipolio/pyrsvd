@@ -1,6 +1,5 @@
 #!/usr/bin/python
-"""A script to apply an already trained model to some data.
-
+"""A script to apply a trained model to some data.
 
 """
 import sys
@@ -21,19 +20,19 @@ class Usage(Exception):
 def usage():
     print """Usage: rsvd_predict [options] model_dir
     
-Applies the trained model in <model_dir> to test data. Two
-formats are supported: text input (<movie_id>\t<user_id>\n) or
-a numpy record array.
+Applies the trained model in <model_dir> to test data.
+Two formats are supported:
+  text input (<movie_id>\\t<user_id>\\n), or
+  numpy record array (dtype `rsvd.rating_t`).
 
-Output is always textual (<movie_id>\t<user_id>\t<predicted_rating>\n)
+Output is always textual (<movie_id>\\t<user_id>\\t<predicted_rating>\\n).
 
-See <http://code.google.com/p/pyrsvd/> for 
-further information. 
+See <http://code.google.com/p/pyrsvd/> for further information. 
 
 Options:
   -h, --help\tPrint this help
   -o <file>\tThe output file. If '-' or not set stdout is used.
-  -i <file>\tThe input file. If '-' or not set stdin is used. 
+  -i <file>\tThe input file. If '-' or not set stdin is used.
 
 For bug reporting, please mail to:
 <peter.prettenhofer@gmail.com>

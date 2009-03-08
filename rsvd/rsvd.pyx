@@ -8,14 +8,12 @@ import getopt
 from time import time
 from os.path import exists
 
-
-globalAvgRating=3.603304257811724
+# FIMXE parameterize rand noise
 randomNoise=0.005
 
 """The numpy data type of a rating array. 
 """
-rating_t=np.dtype('H,I,B')
-
+rating_t = np.dtype("H,I,B")
 
 class RSVD(object):
     """A regularized singular value decomposition solver.
@@ -23,12 +21,13 @@ class RSVD(object):
     The solver is used to compute the low-rank approximation of large partial
     matrices.
 
-    To train a model (i.e. a factorization) use the following
-    factory method:
+    To train a model use the following factory method:
     > model=RSVD.train(10,ratings,(17770,480189))
 
-    Where ratings is a numpy record array of data type ('H,I,B'), which
-    corresponds to (uint16,uint32,uint8). See `rsvd.rating_t`.
+    Where ratings is a numpy record array of data type `rsvd.rating_t`, which
+    corresponds to (uint16,uint32,uint8).
+    It is assumed that item and user ids are properly mapped to the interval [0,max item id] and [0,max user id], respectively.
+    Min and max ratings are estimated from the training data. 
 
     To predict the rating of user i and movie j use:
     > model(j,i)
@@ -45,7 +44,9 @@ class RSVD(object):
                 'lr':self.lr,
                 'reg':self.reg,
                 'min_improvement':self.min_improvement,
-                'max_epochs':self.max_epochs}
+                'max_epochs':self.max_epochs,
+                'min_rating':self.min_rating,
+                'max_rating':self.max_rating}
         
     def save(self,model_dir_path):
         """Saves the model to the given directory.
@@ -89,7 +90,8 @@ class RSVD(object):
 
         Returns
         -------
-        describe : 
+        describe : RSVD
+            The deserialized model. 
         """
         f=file(model_dir_path+"/model")
         model=pickle.load(f)
@@ -121,12 +123,13 @@ class RSVD(object):
             The predicted rating.
             
         """
-        
+        min_rating=self.min_rating
+        max_rating=self.max_rating
         r=np.dot(self.u[movie_id-1],self.v[user_id])
-        if r>5.0:
-            r=5.0
-        if r<1.0:
-            r=1.0
+        if r>max_rating:
+            r=max_rating
+        if r<min_rating:
+            r=min_rating
         return r
 
     @classmethod
@@ -176,6 +179,11 @@ class RSVD(object):
         randomize : {True,False}
             Whether or not the ratingArray should be shuffeled. (False)
 
+        Returns
+        -------
+        describe : RSVD
+            The trained model. 
+
         Note
         ----
         It is assumed, that the `ratingsArray` is proper shuffeld. 
@@ -192,11 +200,17 @@ class RSVD(object):
         model.min_improvement=minImprovement
         model.max_epochs=maxEpochs
 
-        initVal=np.sqrt(globalAvgRating/factors)
+        avgRating = float(ratingsArray['f2'].sum()) / \
+                    float(ratingsArray.shape[0])
+
+        model.min_rating=ratingsArray['f2'].min()
+        model.max_rating=ratingsArray['f2'].max()
+
+        initVal=np.sqrt(avgRating/factors)
 
         rs=np.random.RandomState()
+        
         # define the movie factors U
-
         model.u=rs.uniform(\
             -randomNoise,randomNoise, model.num_movies*model.factors)\
             .reshape(model.num_movies,model.factors)+initVal
@@ -236,7 +250,6 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
 
     Notes
     -----
-
     * Shuffling may take a while.
     
     """
@@ -287,7 +300,7 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
             out.write("Shuffling training data\t")
             out.flush()
             np.random.shuffle(ratings)
-            out.write("Done\n")
+            out.write("done\n")
         trainErr=train(<Rating *>&(ratings[0]), dataU, \
                             dataV, K,n, reg,lr)
 
@@ -308,6 +321,7 @@ cdef struct Rating:
     np.uint32_t userID
     np.uint8_t rating
 
+
 cdef double predict(int uOffset,int vOffset, \
                         double *dataU, double *dataV, \
                         int factors):
@@ -320,22 +334,22 @@ cdef double predict(int uOffset,int vOffset, \
         pred+=dataU[uOffset+k] * dataV[vOffset+k]
     return pred
 
-cdef double predictClip(int uOffset,int vOffset, \
-                        double *dataU, double *dataV, \
-                        int factors):
-    """Predict the rating of user i and movie j by first computing the
-    dot product of the user and movie factors. Finally, the prediction
-    is clipped into the range [1,5].
-    """
-    cdef double pred=0.0
-    cdef int k=0
-    for k from 0<=k<factors:
-        pred+=dataU[uOffset+k] * dataV[vOffset+k]
-    if pred>5.0:
-        pred=5.0
-    if pred<1.0:
-        pred=1.0
-    return pred
+#cdef double predictClip(int uOffset,int vOffset, \
+#                        double *dataU, double *dataV, \
+#                        int factors):
+#    """Predict the rating of user i and movie j by first computing the
+#    dot product of the user and movie factors. Finally, the prediction
+#    is clipped into the range [1,5].
+#    """
+#    cdef double pred=0.0
+#    cdef int k=0
+#    for k from 0<=k<factors:
+#        pred+=dataU[uOffset+k] * dataV[vOffset+k]
+#    if pred>MAX_RATING:
+#        pred=MAX_RATING
+#    if pred<MIN_RATING:
+#        pred=MIN_RATING
+#    return pred
 
 
 cdef double train(Rating *ratings, \
@@ -381,7 +395,7 @@ cdef double probe(Rating *probeRatings, double *dataU, \
         movie=r.movieID-1
         uOffset=movie*factors
         vOffset=user*factors
-        err=(<double>r.rating) - predictClip(uOffset,vOffset, dataU,dataV,factors)
+        err=(<double>r.rating) - predict(uOffset,vOffset, dataU,dataV,factors)
         sumSqErr+=err*err
     return np.sqrt(sumSqErr/numRatings)
 
