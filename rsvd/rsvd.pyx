@@ -223,7 +223,6 @@ class RSVD(object):
         __trainModel(model,ratingsArray,probeArray,randomize=randomize)
         return model
 
-
 def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     """Trains the model on the given rating data.
     
@@ -369,7 +368,7 @@ cdef double train(Rating *ratings, \
     for i from 0<=i<n:
         r=ratings[i]
         user=r.userID
-        movie=r.movieID-1  
+        movie=r.movieID-1
         uOffset=movie*factors
         vOffset=user*factors
         err=<double>r.rating - \
