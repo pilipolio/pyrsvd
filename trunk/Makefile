@@ -18,7 +18,12 @@ rsvd.c : rsvd/rsvd.pyx
 all : rsvd.so
 
 clean : 
-	rm $(MODULE_SO) rsvd/rsvd.c
+	rm $(MODULE_SO)
+        rm *.pyc
+        rm rsvd/*.pyc
 
 cleancython : 
 	rm rsvd/rsvd.c
+
+tar : clean
+	tar -cf $(ARCHIVE) --exclude-vcs -X *.tmp
