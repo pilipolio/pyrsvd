@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &mdash; PyRSVD v0.09 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.09',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="PyRSVD v0.09 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to PyRSVD&#8217;s Users Guide" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to PyRSVD&#8217;s Users Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyRSVD v0.09 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  
+  <div class="section" id="id1">
+<span id="overview"></span><h1>Overview<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="about-pyrsvd">
+<h2>About PyRSVD<a class="headerlink" href="#about-pyrsvd" title="Permalink to this headline">¶</a></h2>
+<p>PyRSVD provides an efficient python implementation of a regularized
+singular value decomposition solver. The module is primarily aimed at
+applications in collaborative filtering, in particular the <a class="reference external" href="http://netflixprize.com">Netflix
+competition</a>.</p>
+</div>
+<div class="section" id="matrix-approximation">
+<h2>Matrix Approximation<a class="headerlink" href="#matrix-approximation" title="Permalink to this headline">¶</a></h2>
+<p>The solver is used to compute a low-rank approximation of a rating matrix &#8216;&#8217;R&#8217;&#8216;, which is usually a large partial matrix (i.e. lots of missing values).</p>
+<p>More formally,</p>
+<div class="math">
+<p><img src="_images/math/e4dd7ce5f9c2e734d2a6baf8b66c1c21b89025dd.png" alt="\mathbf{R} \approx \mathbf{U} \mathbf{V}^T \text{ where, } \mathbf{R}: m \times n, \mathbf{U}: m\times k, \mathbf{V}:n\times k" />
+</div></p><p>The goodness of the approximation is measured in terms of the frobenius norm with respect to the known ratings. Minimizing the frobenius norm between the rating matrix R and the factorization is equivalent to minimize the squared error with respect to the known ratings. Due to the huge number of parameters, overfitting is a serious problem. It is avoided by adding a regularization term to the squared error function, which penalizes large parameters.
+The regularized error function is given by,</p>
+<div class="math">
+<p><img src="_images/math/afdc6c2806801cc03d36539c60a39f9b7bfb9a1d.png" alt="\mathcal{L}(\mathbf{U},\mathbf{V}) = \sum_{i,j \in R} (r_{i,j} - \mathbf{U}_i \  \mathbf{V}_j^T) + \lambda (\sum_i \lVert \mathbf{U}_i \rVert^2 + \sum_j \lVert \mathbf{V}_j \rVert^2)" />
+</div></p><p>The solver uses stochastic gradient decent to minimize the above error function.</p>
+<p>Matrix approximation has been applied very successfully in collaborative
+filtering. The factors reveal some of the latent structure in the rating data which is subsequently used to predict user preferences. The factorization produced by the solver can
+directly be used to predict ratings or as a preprocessing step, e.g. to represent each user by a vector of latent factors he or she is interested in.</p>
+</div>
+<div class="section" id="future-plans">
+<h2>Future Plans<a class="headerlink" href="#future-plans" title="Permalink to this headline">¶</a></h2>
+<p>Among the varios refactorings I intend to extend the interface to
+allow both, uint8 and float ratings.</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>For differences with Pyrex see <div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/home/pprett/workspace/pyrsvd/doc/overview.rst</tt>)</p>
+undefined label: pyrex-differences &#8211; if you don&#8217;t give a link caption the label must precede a section header.</div>
+.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Overview</a><ul>
+<li><a class="reference external" href="#about-pyrsvd">About PyRSVD</a></li>
+<li><a class="reference external" href="#matrix-approximation">Matrix Approximation</a></li>
+<li><a class="reference external" href="#future-plans">Future Plans</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html" title="previous chapter">Welcome to PyRSVD&#8217;s Users Guide</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/overview.txt">Show Source</a></li>
+            </ul>
+          <h3>Quick search</h3>
+            <form class="search" action="search.html" method="get">
+              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to PyRSVD&#8217;s Users Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyRSVD v0.09 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, peter.prettenhofer@gmail.com.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+    </div>
+  </body>
+</html>
