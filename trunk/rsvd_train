@@ -19,13 +19,13 @@ class Usage(Exception):
         self.msg = msg
 
 def usage():
-    print """Usage: rsvd_train [options] training_array nmovies nusers output_dir
+    print """Usage: rsvd_train [options] training_array num_movies num_users output_dir
+    
 Trains a regularized SVD solver on the given training data and stores the 
-trained model in <output_dir>. The training data is assumed to be 
-a serialized numpy record array. nmovies and nusers are the number 
-of movies and users, resp., in the data set. 
-See <http://code.google.com/p/pyrsvd/> for 
-further information. 
+trained model in `output_dir`. The training data is assumed to be 
+a serialized numpy record array. `num_movies` and `num_users` are the number 
+of movies and users, resp., in the data set.
+See <http://code.google.com/p/pyrsvd/> for further information. 
 
 Options: 
   -h, --help\tPrint this help
@@ -37,6 +37,7 @@ Options:
 \t\tIf defined, early stopping is turned on
   --maxepochs\tThe max number of epochs to perform
   --randomize\tShuffle the training data every 10th epoch.
+  --minimprovement\tThe min improvement in RMSE on the probeset to trigger early stopping [default: 0.000001].
 
 For bug reporting, please mail to:
 <peter.prettenhofer@gmail.com>
@@ -50,10 +51,9 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(argv[1:], "hl:r:f:", \
                                            ["help","probe=","maxepochs=",\
-                                                "randomize"])
+                                                "minimprovement=","randomize"])
         except getopt.error, msg:
              raise Usage(msg)
-        
         
         lr=0.001
         reg=0.011
@@ -62,6 +62,7 @@ def main(argv=None):
         max_epochs=100
         randomize=False
         factors=10
+        min_improvement=0.000001
         for o, a in opts:
             if o in ("-h", "--help"):
                 usage()
@@ -78,6 +79,8 @@ def main(argv=None):
                 max_epochs=int(a)
             elif o in ("--randomize"):
                 randomize=True
+            elif o in ("--minimprovement"):
+                min_improvement=float(a)
             else:
                 raise Usage("unhandled option")
         
@@ -88,18 +91,20 @@ def main(argv=None):
             nmovies=int(args[1])
             nusers=int(args[2])
             output=args[3]
-            print >>sys.stdout, "Loading training data...",
+            print >>sys.stdout, "Loading training data...\t",
+            sys.stdout.flush()
             ratingsArray=np.fromfile(ratingsFile,dtype=rating_t)
             print >>sys.stdout, "done."
             probeArray=None
             if probeFile:
-                print >>sys.stdout, "Loading probe data...",
+                print >>sys.stdout, "Loading probe data...\t",
+                sys.stdout.flush()
                 probeArray=np.fromfile(file(probeFile),dtype=rating_t)
                 print >>sys.stdout, "done."
             model=RSVD.train(factors,ratingsArray,(nmovies,nusers),\
                              probeArray=probeArray,\
                              maxEpochs=max_epochs,\
-                             minImprovement=0.000001,\
+                             minImprovement=min_improvement,\
                              learnRate=lr,\
                              regularization=reg,\
                              randomize=randomize)
@@ -109,7 +114,7 @@ def main(argv=None):
             print >>sys.stderr, "Error: ",e
         
     except Usage, err:
-        print >>sys.stderr, err.msg
+        print >>sys.stderr, "Error: ",err.msg
         usage()
         return 2
 
