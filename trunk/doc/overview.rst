@@ -1,5 +1,3 @@
-.. highlight:: pyrsvd
-
 .. _overview:
 
 ********
@@ -34,19 +32,12 @@ The regularized error function is given by,
 
 The solver uses stochastic gradient decent to minimize the above error function. 
 
-
-
-Matrix approximation has been applied very successfully in collaborative
-filtering. The factors reveal some of the latent structure in the rating data which is subsequently used to predict user preferences. The factorization produced by the solver can
+Matrix approximation is a simple proven technique for collaborative filtering. The factors reveal some of the latent structure in the rating data which is subsequently used to predict user preferences. The factorization produced by the solver can
 directly be used to predict ratings or as a preprocessing step, e.g. to represent each user by a vector of latent factors he or she is interested in.
 
 
 Future Plans
 ============
-Among the varios refactorings I intend to extend the interface to 
-allow both, uint8 and float ratings. 
+ * Extend the interface to allow both, uint8 and float ratings. 
 
-.. rubric:: Footnotes
-
-.. [#] For differences with Pyrex see :ref:`pyrex-differences`.
 
