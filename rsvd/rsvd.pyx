@@ -137,7 +137,9 @@ class RSVD(object):
                   maxEpochs=100,minImprovement=0.000001,\
                   learnRate=0.001,regularization=0.011,\
                   randomize=False):
-        """Factorizes the partial rating matrix.
+        """Factorizes the given partial rating matrix.
+
+        train(factors,ratingsArray,dims,**kargs) -> RSVD
 
         If a validation set (probeArray) is given, early stopping is performed
         and training stops as soon as the relative improvement on the validation
