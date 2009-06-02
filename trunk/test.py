@@ -11,20 +11,16 @@ This is a test
 #log# It is safe to make manual edits below here.
 #log#-----------------------------------------------------------------------
 import numpy as np
-
-f=open('data/ratings.arr','r')
-rating=np.dtype('H,I,B')
-print 'load ratings'
-ratings=np.fromfile(f,dtype=rating)
-
-f.close()
-f=open('data/probe_ratings.arr','r')
-probeRatings=np.fromfile(f,dtype=rating)
-f.close()
 from rsvd import RSVD
-model=RSVD.train(128,ratings,(17770,480189),probeRatings,150,randomize=False)
+print 'load ratings'
+ratings=np.load('data/ratings_float.arr')
+
+probeRatings=np.load('data/probe_ratings_float.arr')
+
+
+model=RSVD.train(20,ratings,(17770,480189),probeRatings,100,randomize=False)
 print "model trained..."
 
-model.save("models/t_128_001_011_150")
+model.save("models/t_20_001_011_100")
 
 
