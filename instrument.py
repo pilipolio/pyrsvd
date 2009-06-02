@@ -8,7 +8,7 @@ if len(sys.argv)<2:
 
 inputfile=sys.argv[1]
 
-PATTERN = "{\n  __pyx_t_5numpy_uint16_t movieID;\n  __pyx_t_5numpy_uint32_t userID;\n  __pyx_t_5numpy_uint8_t rating;\n}"
+PATTERN = "{\n  __pyx_t_5numpy_uint16_t movieID;\n  __pyx_t_5numpy_uint32_t userID;\n  __pyx_t_5numpy_float32_t rating;\n}"
 INSTRUMENTATION=" __attribute__((packed))"
 f=open(inputfile,'r')
 code=''.join(f.readlines())

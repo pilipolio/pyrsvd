@@ -13,7 +13,7 @@ randomNoise=0.005
 
 """The numpy data type of a rating array. 
 """
-rating_t = np.dtype("H,I,B")
+rating_t = np.dtype("H,I,f4")
 
 class RSVD(object):
     """A regularized singular value decomposition solver.
@@ -25,7 +25,7 @@ class RSVD(object):
     > model=RSVD.train(10,ratings,(17770,480189))
 
     Where ratings is a numpy record array of data type `rsvd.rating_t`, which
-    corresponds to (uint16,uint32,uint8).
+    corresponds to (uint16,uint32,float32).
     It is assumed that item and user ids are properly mapped to the interval [0,max item id] and [0,max user id], respectively.
     Min and max ratings are estimated from the training data. 
 
@@ -156,7 +156,7 @@ class RSVD(object):
             The number of latent variables. 
         ratingsArray : ndarray
             A numpy record array containing the ratings.E
-            Each rating is a triple (uint16,uint32,uint8). 
+            Each rating is a triple (uint16,uint32,float32). 
         dims : tuple
             A tuple (numMovies,numUsers).
             It is used to determine the size of the
@@ -202,7 +202,9 @@ class RSVD(object):
         model.min_improvement=minImprovement
         model.max_epochs=maxEpochs
 
-        avgRating = float(ratingsArray['f2'].sum()) / \
+        # convert ratings to float64 due to numerical problems
+        # when summing over a huge number of values 
+        avgRating = float(ratingsArray['f2'].astype(np.float64).sum()) / \
                     float(ratingsArray.shape[0])
 
         model.min_rating=ratingsArray['f2'].min()
@@ -320,7 +322,7 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
 cdef struct Rating:
     np.uint16_t movieID
     np.uint32_t userID
-    np.uint8_t rating
+    np.float32_t rating
 
 
 cdef double predict(int uOffset,int vOffset, \
