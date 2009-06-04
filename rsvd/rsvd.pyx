@@ -8,8 +8,7 @@ import getopt
 from time import time
 from os.path import exists
 
-# FIMXE parameterize rand noise
-randomNoise=0.005
+
 
 """The numpy data type of a rating array. 
 """
@@ -136,7 +135,7 @@ class RSVD(object):
     def train(cls,factors,ratingsArray,dims,probeArray=None,\
                   maxEpochs=100,minImprovement=0.000001,\
                   learnRate=0.001,regularization=0.011,\
-                  randomize=False):
+                  randomize=False, randomNoise=0.005):
         """Factorizes the given partial rating matrix.
 
         train(factors,ratingsArray,dims,**kargs) -> RSVD
@@ -223,7 +222,8 @@ class RSVD(object):
         model.v=rs.uniform(\
             -randomNoise,randomNoise, model.num_users*model.factors)\
             .reshape(model.num_users,model.factors)+initVal
-        
+
+                
         __trainModel(model,ratingsArray,probeArray,randomize=randomize)
         return model
 
@@ -284,7 +284,7 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     out.write("########################################\n")
     out.write("             Factorizing                \n")
     out.write("########################################\n")
-    out.write("factors=%d, epochs=%d, lr=%f, reg=%f\n" % (K,max_epochs,lr,reg))
+    out.write("factors=%d, epochs=%d, lr=%f, reg=%f, n=%d\n" % (K,max_epochs,lr,reg,n))
     out.flush()
     if early_stopping:
         oldProbeErr=probe(<Rating *>&(probeRatings[0]),\
@@ -391,6 +391,7 @@ cdef double probe(Rating *probeRatings, double *dataU, \
     cdef unsigned int user
     cdef unsigned short movie
     cdef Rating r
+    cdef double pred = 0.0
     cdef double err,sumSqErr=0.0
     for i from 0<=i<numRatings:
         r=probeRatings[i]
@@ -398,8 +399,16 @@ cdef double probe(Rating *probeRatings, double *dataU, \
         movie=r.movieID-1
         uOffset=movie*factors
         vOffset=user*factors
-        err=(<double>r.rating) - predict(uOffset,vOffset, dataU,dataV,factors)
+        pred = predict(uOffset,vOffset, dataU,dataV,factors)
+        #if np.isnan(pred):
+        #    print "pred is nan, i=%d, doc=%d, term=%d" % (i,movie,user)
+        err=(<double>r.rating) - pred
+        #if np.isnan(err):
+        #    print "err is nan, i=%d, doc=%d, term=%d" % (i,movie,user)
+        
         sumSqErr+=err*err
+        #if i % 1000000 == 0.0:
+        #    print err*err, sumSqErr, numRatings, np.sqrt(sumSqErr/numRatings)
     return np.sqrt(sumSqErr/numRatings)
 
 
