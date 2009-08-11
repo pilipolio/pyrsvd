@@ -26,4 +26,4 @@ cleancython :
 	rm rsvd/rsvd.c
 
 tar : 
-	tar -cf $(ARCHIVE) --exclude-vcs --exclude models --exclude data --exclude build --exclude doc --exclude *~ --exclude svn-commit.tmp *
+	tar -cf $(ARCHIVE) --exclude-vcs --exclude models --exclude data --exclude build --exclude doc --exclude *~ --exclude svn-commit.tmp --exclude *.pyc --exclude *.so *
