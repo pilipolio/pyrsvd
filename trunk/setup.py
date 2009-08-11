@@ -9,6 +9,7 @@ setup(
     name = "rsvd",
     ext_modules = [Extension("rsvd/rsvd", ["rsvd/rsvd.c"],
                              include_dirs=[numpy_path],
+                             extra_link_args=["-O3","-ffast-math"]
                              ),
                   ],
     version = "0.1",
@@ -16,5 +17,6 @@ setup(
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',
     url="http://code.google.com/p/pyrsvd/",
+    scripts = ["rsvd_train","rsvd_predict"],
     packages=['rsvd'],
 )
