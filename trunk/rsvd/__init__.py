@@ -38,11 +38,11 @@ __version__="0.1"
 __author__="peter.prettenhofer@gmail.com"
 __license__="mit"
 
-_numpy_version=(1,1,0)
+_numpy_version=(1,1)
 
 try:
     import numpy as np
-    if tuple((int(x) for x in np.__version__.split('.')))\
+    if tuple((int(x) for x in np.__version__.split('.')[:2]))\
        < _numpy_version:
         print "Numpy version %s is required for PyRSVD (%d detected)." % ('.'.join(_numpy_version),np.__version__)
         sys.exit(-1)

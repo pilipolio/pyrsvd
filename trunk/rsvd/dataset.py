@@ -57,7 +57,7 @@ class Dataset(object):
             err=rating-model(movieID,userID)
             sqerr+=err*err
         return np.sqrt(sqerr/self._ratings.shape[0])
-        
+
 class MovieLensDataset(Dataset):
     """The MovieLens dataset.
 
@@ -106,7 +106,6 @@ class MovieLensDataset(Dataset):
         finally:
             f.close()
 
-
 class NetflixDataset(Dataset):
     """
     """
@@ -136,4 +135,5 @@ def main(prog_args):
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv) or 0)
+
 
