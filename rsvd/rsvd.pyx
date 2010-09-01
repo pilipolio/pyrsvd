@@ -46,6 +46,7 @@ class RSVD(object):
                 'max_epochs':self.max_epochs,
                 'min_rating':self.min_rating,
                 'max_rating':self.max_rating}
+
         
     def save(self,model_dir_path):
         """Saves the model to the given directory.
@@ -101,7 +102,7 @@ class RSVD(object):
                  reshape((model.num_movies,model.factors))
         return model
 
-    def __call__(self,movie_id,user_id,user_map=None):
+    def __call__(self,movie_id,user_id):
         """Predict the rating of user i and movie j.
         The prediction is the dot product of the user
         and movie factors, resp.
@@ -264,7 +265,7 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     cdef int n=ratings.shape[0]
     cdef int nMovies=model.num_movies
     cdef int nUsers=model.num_users
-    cdef int i,k,epochs=0
+    cdef int i,k,epoch=0
     cdef int K=model.factors
     cdef int max_epochs=model.max_epochs
     cdef np.uint16_t m=0
@@ -273,6 +274,7 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     cdef np.double_t lr=model.lr
     cdef np.double_t reg=model.reg
     cdef double probeErr=0.0, oldProbeErr=0.0
+    cdef double min_improvement = model.min_improvement
     
     cdef np.ndarray U=model.u   
     cdef np.ndarray V=model.v
@@ -310,11 +312,11 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
         if early_stopping:
             probeErr=probe(<Rating *>&(probeRatings[0]),dataU, \
                                 dataV,K,probeRatings.shape[0])
-            if oldProbeErr-probeErr < model.min_improvement:
+            if oldProbeErr-probeErr < min_improvement:
                 out.write("Early stopping\nRelative improvement %f\n" \
                           % (oldProbeErr-probeErr))
                 break
-            oldProbeErr=probeErr
+            oldProbeErr = probeErr
         out.write("%d\t%f\t%f\t%f\n"%(epoch,trainErr,probeErr,time()-t1))
         out.flush()
 
@@ -336,24 +338,6 @@ cdef double predict(int uOffset,int vOffset, \
     for k from 0<=k<factors:
         pred+=dataU[uOffset+k] * dataV[vOffset+k]
     return pred
-
-#cdef double predictClip(int uOffset,int vOffset, \
-#                        double *dataU, double *dataV, \
-#                        int factors):
-#    """Predict the rating of user i and movie j by first computing the
-#    dot product of the user and movie factors. Finally, the prediction
-#    is clipped into the range [1,5].
-#    """
-#    cdef double pred=0.0
-#    cdef int k=0
-#    for k from 0<=k<factors:
-#        pred+=dataU[uOffset+k] * dataV[vOffset+k]
-#    if pred>MAX_RATING:
-#        pred=MAX_RATING
-#    if pred<MIN_RATING:
-#        pred=MIN_RATING
-#    return pred
-
 
 cdef double train(Rating *ratings, \
                             double *dataU, double *dataV, \

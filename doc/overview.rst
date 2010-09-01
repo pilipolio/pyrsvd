@@ -1,10 +1,10 @@
 .. _overview:
 
-********
-Overview
-********
+===============
+PyRSVD Overview
+===============
 
-About PyRSVD
+Introduction
 ============
 
 PyRSVD provides an efficient python implementation of a regularized 
@@ -23,7 +23,7 @@ More formally,
 
     \mathbf{R} \approx \mathbf{U} \mathbf{V}^T \text{ where, } \mathbf{R}: m \times n, \mathbf{U}: m\times k, \mathbf{V}:n\times k
 
-The goodness of the approximation is measured in terms of the frobenius norm with respect to the known ratings. Minimizing the frobenius norm between the rating matrix R and the factorization is equivalent to minimize the squared error with respect to the known ratings. Due to the huge number of parameters, overfitting is a serious problem. It is avoided by adding a regularization term to the squared error function, which penalizes large parameters. 
+The goodness of the approximation is measured in terms of the frobenius norm :math:`\lVert \mathbf{R}-\mathbf{U} \mathbf{V}^T\rVert_{F}` with respect to the known ratings. Minimizing the frobenius norm between the rating matrix R and the factorization is equivalent to minimize the squared error. Due to the huge number of parameters, overfitting is a serious problem. It is avoided by adding a regularization term to the squared error function, which penalizes large parameters. 
 The regularized error function is given by, 
 
 .. math::
@@ -34,6 +34,8 @@ The solver uses stochastic gradient decent to minimize the above error function.
 
 Matrix approximation is a simple proven technique for collaborative filtering. The factors reveal some of the latent structure in the rating data which is subsequently used to predict user preferences. The factorization produced by the solver can
 directly be used to predict ratings or as a preprocessing step, e.g. to represent each user by a vector of latent factors he or she is interested in.
+
+
 
 
 Future Plans

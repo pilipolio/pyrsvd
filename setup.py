@@ -12,7 +12,7 @@ setup(
                              extra_link_args=["-O3","-ffast-math"]
                              ),
                   ],
-    version = "0.1",
+    version = "0.2",
     description="A regularized SVD solver for partial matrices",
     author='Peter Prettenhofer',
     author_email='peter.prettenhofer@gmail.com',
