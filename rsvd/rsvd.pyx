@@ -1,3 +1,9 @@
+# encoding: utf-8
+# cython: cdivision=True
+# cython: boundscheck=False
+# cython: wraparound=False
+# filename: rsvd.pyx
+
 cimport numpy as np
 
 import numpy as np
@@ -8,7 +14,9 @@ import getopt
 from time import time
 from os.path import exists
 
-
+__authors__ = [
+      '"Peter Prettenhofer" <peter.prettenhofer@gmail.com>'
+]
 
 """The numpy data type of a rating array. 
 """
@@ -228,7 +236,7 @@ class RSVD(object):
         __trainModel(model,ratingsArray,probeArray,randomize=randomize)
         return model
 
-def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
+def __trainModel(model,ratingsArray,probeArray,randomize=False):
     """Trains the model on the given rating data.
     
     If `probeArray` is not None the error on the probe set is
@@ -283,29 +291,29 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
     cdef double *dataV=<double *>V.data
     
         
-    out.write("########################################\n")
-    out.write("             Factorizing                \n")
-    out.write("########################################\n")
-    out.write("factors=%d, epochs=%d, lr=%f, reg=%f, n=%d\n" % (K,max_epochs,lr,reg,n))
-    out.flush()
+    print("########################################")
+    print("             Factorizing                ")
+    print("########################################")
+    print("factors=%d, epochs=%d, lr=%f, reg=%f, n=%d" % (K,max_epochs,lr,reg,n))
+    sys.stdout.flush()
     if early_stopping:
         oldProbeErr=probe(<Rating *>&(probeRatings[0]),\
                           dataU,dataV,K,probeRatings.shape[0])
-        out.write("Init PRMSE: %f\n" % oldProbeErr)
-        out.flush()
+        print("Init PRMSE: %f" % oldProbeErr)
+        sys.stdout.flush()
 
     trainErr=probe(<Rating *>&(ratings[0]), dataU, dataV,K,n)
-    out.write("Init TRMSE: %f\n" % trainErr)
-    out.write("----------------------------------------\n")
-    out.write("epoche\ttrain err\tprobe err\telapsed time\n")
-    out.flush()
+    print("Init TRMSE: %f" % trainErr)
+    print("----------------------------------------")
+    print("epoche\ttrain err\tprobe err\telapsed time")
+    sys.stdout.flush()
     for epoch from 0 <= epoch < max_epochs:
         t1=time()
         if randomize and epoch%10==0:
-            out.write("Shuffling training data\t")
-            out.flush()
+            print("Shuffling training data\t")
+            sys.stdout.flush()
             np.random.shuffle(ratings)
-            out.write("done\n")
+            print("done")
         trainErr=train(<Rating *>&(ratings[0]), dataU, \
                             dataV, K,n, reg,lr)
 
@@ -313,12 +321,12 @@ def __trainModel(model,ratingsArray,probeArray,out=sys.stdout,randomize=False):
             probeErr=probe(<Rating *>&(probeRatings[0]),dataU, \
                                 dataV,K,probeRatings.shape[0])
             if oldProbeErr-probeErr < min_improvement:
-                out.write("Early stopping\nRelative improvement %f\n" \
+                print("Early stopping\nRelative improvement %f" \
                           % (oldProbeErr-probeErr))
                 break
             oldProbeErr = probeErr
-        out.write("%d\t%f\t%f\t%f\n"%(epoch,trainErr,probeErr,time()-t1))
-        out.flush()
+        print("%d\t%f\t%f\t%f"%(epoch,trainErr,probeErr,time()-t1))
+        sys.stdout.flush()
 
 # The Rating struct. 
 cdef struct Rating:
