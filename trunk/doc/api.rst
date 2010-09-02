@@ -15,7 +15,7 @@ The :mod:`rsvd` Module: A regularized SVD solver for collaborative filtering
 
 .. attribute:: rating_t
     
-   The data type of the rating arrays. It is a (uint16,uint32,uint8) triple. A :class:`numpy.dtype` object. 
+   The data type of the rating arrays. It is a (uint16,uint32,float) triple. A :class:`numpy.dtype` object. 
 
 .. class:: RSVD
    
