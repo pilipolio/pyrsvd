@@ -44,6 +44,8 @@ def main():
         print "rsvd learn curve reading from stdin..."
         while 1:
             line = sys.stdin.readline()
+            if line == None:
+                break
             print line,
             sys.stdout.flush()
             m = rec.match(line)
