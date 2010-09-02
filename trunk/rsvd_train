@@ -7,11 +7,11 @@ import sys
 import getopt
 import numpy as np
 
-from rsvd import RSVD,rating_t
+import rsvd
 
-__version__="0.1"
-__author__="peter.prettenhofer@gmail.com"
-__license__="mit"
+__version__ = rsvd.__version__
+__author__  = rsvd.__author__
+__license__ = rsvd.__license__
 
 
 class Usage(Exception):
@@ -93,15 +93,15 @@ def main(argv=None):
             output=args[3]
             print >>sys.stdout, "Loading training data...\t",
             sys.stdout.flush()
-            ratingsArray=np.fromfile(ratingsFile,dtype=rating_t)
+            ratingsArray=np.fromfile(ratingsFile,dtype=rsvd.rating_t)
             print >>sys.stdout, "done."
             probeArray=None
             if probeFile:
                 print >>sys.stdout, "Loading probe data...\t",
                 sys.stdout.flush()
-                probeArray=np.fromfile(file(probeFile),dtype=rating_t)
+                probeArray=np.fromfile(file(probeFile),dtype=rsvd.rating_t)
                 print >>sys.stdout, "done."
-            model=RSVD.train(factors,ratingsArray,(nmovies,nusers),\
+            model=rsvd.RSVD.train(factors,ratingsArray,(nmovies,nusers),\
                              probeArray=probeArray,\
                              maxEpochs=max_epochs,\
                              minImprovement=min_improvement,\
