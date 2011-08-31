@@ -34,7 +34,7 @@ U{Numpy 1.1 <http://www.numpy.org/>} or later.
 
 import sys
 
-__version__="0.2"
+__version__="0.2.5"
 __author__="peter.prettenhofer@gmail.com"
 __license__="mit"
 
