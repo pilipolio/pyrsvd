@@ -106,6 +106,51 @@ class MovieLensDataset(Dataset):
         finally:
             f.close()
 
+
+class EloChessDataset(Dataset):
+    """The Elo-Chess dataset.
+
+    whitePlayer corresponds to movieId.
+    blackPlayer to userId.
+
+    see U{GroupLens <http://www.grouplens.org/>} for further information
+    """
+
+    def __init__(self, movieIDs,userIDs,ratings):
+        """
+        """
+        super(EloChessDataset,self).__init__(movieIDs,userIDs,ratings)
+
+
+    @classmethod
+    def loadCSV(cls,file):
+        """Loads the dataset via a csv file file. 
+        """
+        if not exists(file):
+            raise ValueError("%s file does not exist" % file)
+        f=open(file)
+        try:
+	    f.readline() # discard file header
+            lineit = (l.split(",") for l in f.readlines())
+	    rows = [(int(l[1]),int(l[2]),float("0"+l[3])) for l in lineit]
+            n=len(rows)
+            
+            # define rating array (itemID,userID,rating)
+            ratings=np.empty((n,),dtype=rating_t)
+            for i,row in enumerate(rows):
+                ratings[i]=(row[0],row[1],row[2])
+            movieIDs=np.unique(ratings['f0'])
+            userIDs=np.unique(ratings['f1'])
+            
+            movieIDs.sort()
+            userIDs.sort()            
+            
+            return EloChessDataset(movieIDs,userIDs,ratings)
+        finally:
+            f.close()
+
+
+
 class NetflixDataset(Dataset):
     """
     """
