@@ -18,7 +18,7 @@ __authors__ = [
       '"Peter Prettenhofer" <peter.prettenhofer@gmail.com>'
 ]
 
-"""The numpy data type of a rating array. 
+"""The numpy data type of a rating array, a (movieID,userID,rating) triple.
 """
 rating_t = np.dtype("H,I,f4")
 
