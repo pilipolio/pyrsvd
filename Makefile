@@ -3,7 +3,7 @@ CC = gcc
 LD = gcc
 CYTHON = cython
 
-CC_FLAGS = -shared -pthread -fPIC -fwrapv -O3 -Wall -fno-strict-aliasing -I/usr/include/python2.5
+CC_FLAGS = -shared -pthread -fPIC -fwrapv -O3 -Wall -fno-strict-aliasing -I/usr/include/python2.6
 LD_FLAGS = -o
 
 MODULE_SO = rsvd/rsvd.so
