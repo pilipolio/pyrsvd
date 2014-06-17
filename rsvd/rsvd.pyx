@@ -24,7 +24,7 @@ rating_t = np.dtype("H,I,f4")
 
 class RSVD(object):
     """A regularized singular value decomposition solver.
-    
+
     The solver is used to compute the low-rank approximation of large partial
     matrices.
 
@@ -34,11 +34,11 @@ class RSVD(object):
     Where ratings is a numpy record array of data type `rsvd.rating_t`, which
     corresponds to (uint16,uint32,float32).
     It is assumed that item and user ids are properly mapped to the interval [0,max item id] and [0,max user id], respectively.
-    Min and max ratings are estimated from the training data. 
+    Min and max ratings are estimated from the training data.
 
     To predict the rating of user i and movie j use:
     > model(j,i)
-    
+
     """
 
     def __init__(self):
@@ -55,7 +55,7 @@ class RSVD(object):
                 'min_rating':self.min_rating,
                 'max_rating':self.max_rating}
 
-        
+
     def save(self,model_dir_path):
         """Saves the model to the given directory.
         The method raises a ValueError if the directory does not exist
@@ -65,13 +65,13 @@ class RSVD(object):
         ----------
         model_dir_path : str
             The directory of the serialized model.
-        
+
         """
         if exists(model_dir_path+'/v.arr') or \
            exists(model_dir_path+'/u.arr') or \
            exists(model_dir_path+'/model'):
             raise ValueError("There exists already a"+\
-                             "model in %s" % model_dir_path) 
+                             "model in %s" % model_dir_path)
 
         if not exists(model_dir_path):
             raise ValueError("Directory %s does not exist." % model_dir_path)
@@ -99,7 +99,7 @@ class RSVD(object):
         Returns
         -------
         describe : RSVD
-            The deserialized model. 
+            The deserialized model.
         """
         f=file(model_dir_path+"/model")
         model=pickle.load(f)
@@ -115,13 +115,13 @@ class RSVD(object):
         The prediction is the dot product of the user
         and movie factors, resp.
         The result is clipped in the range [1.0,5.0].
-        
+
         Parameters
         ----------
         movie_id : int
             The raw movie id of the movie to be predicted.
         user_id : int
-            The mapped user id of the user. 
+            The mapped user id of the user.
             The mapping is based on the sorted order of user ids
             in the training set.
 
@@ -129,11 +129,11 @@ class RSVD(object):
         -------
         describe : float
             The predicted rating.
-            
+
         """
         min_rating=self.min_rating
         max_rating=self.max_rating
-        r=np.dot(self.u[movie_id-1],self.v[user_id])
+        r=np.dot(self.u[movie_id],self.v[user_id])
         if r>max_rating:
             r=max_rating
         if r<min_rating:
@@ -156,15 +156,15 @@ class RSVD(object):
 
 	The complexity of the algorithm is O(n*k*m), where n is the number of
 	non-missing values in R (i.e. the size of the `ratingArray`), k is the
-	number of factors and m is the number of epochs to be performed. 
+	number of factors and m is the number of epochs to be performed.
 
         Parameters
         ----------
         factors: int
-            The number of latent variables. 
+            The number of latent variables.
         ratingsArray : ndarray
             A numpy record array containing the ratings.E
-            Each rating is a triple (uint16,uint32,float32). 
+            Each rating is a triple (uint16,uint32,float32).
         dims : tuple
             A tuple (numMovies,numUsers).
             It is used to determine the size of the
@@ -182,7 +182,7 @@ class RSVD(object):
             The step size in parameter space.
             Set with caution: if the lr is too high it might
             pass over (local) minima in the error function;
-            if the `lr` is too low the algorithm hardly progresses. (0.001) 
+            if the `lr` is too low the algorithm hardly progresses. (0.001)
         regularization : float
             The regularization term.
             It penalizes the magnitude of the parameters. (0.011)
@@ -192,16 +192,17 @@ class RSVD(object):
         Returns
         -------
         describe : RSVD
-            The trained model. 
+            The trained model.
 
         Note
         ----
-        It is assumed, that the `ratingsArray` is proper shuffeld. 
+        It is assumed, that the `ratingsArray` is proper shuffeld.
         If the randomize flag is set the `ratingArray` is shuffeled every 10th
-        epoch. 
+        epoch.
 
         """
-
+        print '_' * 80
+        print 'Training'
         model=RSVD()
         model.num_movies,model.num_users=dims
         model.factors=factors
@@ -211,34 +212,37 @@ class RSVD(object):
         model.max_epochs=maxEpochs
 
         # convert ratings to float64 due to numerical problems
-        # when summing over a huge number of values 
-        avgRating = float(ratingsArray['f2'].astype(np.float64).sum()) / \
-                    float(ratingsArray.shape[0])
+        # when summing over a huge number of values
+        avgRating = ratingsArray['f2'].mean()
 
         model.min_rating=ratingsArray['f2'].min()
         model.max_rating=ratingsArray['f2'].max()
 
-        initVal=np.sqrt(avgRating/factors)
+        initVal = avgRating / factors
+        print('initVal: %f' % initVal)
+        print('avgRating: %f' % avgRating)
+        print 'min_rating', model.min_rating
+        print 'max_rating', model.max_rating
 
         rs=np.random.RandomState()
-        
+
         # define the movie factors U
         model.u=rs.uniform(\
             -randomNoise,randomNoise, model.num_movies*model.factors)\
             .reshape(model.num_movies,model.factors)+initVal
-        
+
         # define the user factors V
         model.v=rs.uniform(\
             -randomNoise,randomNoise, model.num_users*model.factors)\
             .reshape(model.num_users,model.factors)+initVal
 
-                
+
         __trainModel(model,ratingsArray,probeArray,randomize=randomize)
         return model
 
 def __trainModel(model,ratingsArray,probeArray,randomize=False):
     """Trains the model on the given rating data.
-    
+
     If `probeArray` is not None the error on the probe set is
     determined after each iteration and early stopping is done
     if the error on the probe set starts to increase.
@@ -258,12 +262,12 @@ def __trainModel(model,ratingsArray,probeArray,randomize=False):
         File to which debug msg should be written. (default stdout)
     randomize : {True,False}
         Whether or not the training data should be shuffeled every
-        10th iteration. 
+        10th iteration.
 
     Notes
     -----
     * Shuffling may take a while.
-    
+
     """
     cdef object[Rating] ratings=ratingsArray
     early_stopping=False
@@ -283,16 +287,16 @@ def __trainModel(model,ratingsArray,probeArray,randomize=False):
     cdef np.double_t reg=model.reg
     cdef double probeErr=0.0, oldProbeErr=0.0
     cdef double min_improvement = model.min_improvement
-    
-    cdef np.ndarray U=model.u   
+
+    cdef np.ndarray U=model.u
     cdef np.ndarray V=model.v
-    
+
     cdef double *dataU=<double *>U.data
     cdef double *dataV=<double *>V.data
-    
-        
+
+
     print("########################################")
-    print("             Factorizing                ")
+    print("             Factorizing  Kung-fu       ")
     print("########################################")
     print("factors=%d, epochs=%d, lr=%f, reg=%f, n=%d" % (K,max_epochs,lr,reg,n))
     sys.stdout.flush()
@@ -328,7 +332,7 @@ def __trainModel(model,ratingsArray,probeArray,randomize=False):
         print("%d\t%f\t%f\t%f"%(epoch,trainErr,probeErr,time()-t1))
         sys.stdout.flush()
 
-# The Rating struct. 
+# The Rating struct.
 cdef struct Rating:
     np.uint16_t movieID
     np.uint32_t userID
@@ -339,7 +343,7 @@ cdef double predict(int uOffset,int vOffset, \
                         double *dataU, double *dataV, \
                         int factors):
     """Predict the rating of user i and movie j by first computing the
-    dot product of the user and movie factors. 
+    dot product of the user and movie factors.
     """
     cdef double pred=0.0
     cdef int k=0
@@ -354,7 +358,7 @@ cdef double train(Rating *ratings, \
 
     Iterate through the rating array: for each rating compute
     the gradient with respect to the current parameters
-    and update the movie and user factors, resp. 
+    and update the movie and user factors, resp.
     """
     cdef int k=0,i=0,uOffset=0,vOffset=0
     cdef int user=0
@@ -364,7 +368,7 @@ cdef double train(Rating *ratings, \
     for i from 0<=i<n:
         r=ratings[i]
         user=r.userID
-        movie=r.movieID-1
+        movie=r.movieID
         uOffset=movie*factors
         vOffset=user*factors
         err=<double>r.rating - \
@@ -388,7 +392,7 @@ cdef double probe(Rating *probeRatings, double *dataU, \
     for i from 0<=i<numRatings:
         r=probeRatings[i]
         user=r.userID
-        movie=r.movieID-1
+        movie=r.movieID
         uOffset=movie*factors
         vOffset=user*factors
         pred = predict(uOffset,vOffset, dataU,dataV,factors)
@@ -397,7 +401,7 @@ cdef double probe(Rating *probeRatings, double *dataU, \
         err=(<double>r.rating) - pred
         #if np.isnan(err):
         #    print "err is nan, i=%d, doc=%d, term=%d" % (i,movie,user)
-        
+
         sumSqErr+=err*err
         #if i % 1000000 == 0.0:
         #    print err*err, sumSqErr, numRatings, np.sqrt(sumSqErr/numRatings)
