@@ -4,13 +4,13 @@ Datasets
 
 Netflix
 -------
-Currently, only pyflix converter implemented. 
+Currently, only pyflix converter implemented.
 
 
 
 MovieLens
 ---------
-Parses MovieLens data 
+Parses MovieLens data
 
 
 """
@@ -24,7 +24,7 @@ from os.path import exists
 import numpy as np
 
 from rsvd import rating_t
-    
+
 
 # File Metadata
 __version__="0.1"
@@ -50,7 +50,7 @@ class Dataset(object):
         return self._ratings
 
     def rmse(self,model):
-        """Compute the RMSE of the given model w.r.t. the ratings. 
+        """Compute the RMSE of the given model w.r.t. the ratings.
         """
         sqerr=0.0
         for movieID,userID,rating in self._ratings:
@@ -75,7 +75,7 @@ class MovieLensDataset(Dataset):
 
     @classmethod
     def loadDat(cls,file):
-        """Loads the MovieLens dataset via the ratings.dat file. 
+        """Loads the MovieLens dataset via the ratings.dat file.
 
         """
         if not exists(file):
@@ -84,22 +84,20 @@ class MovieLensDataset(Dataset):
         try:
             rows=[tuple(map(int,l.rstrip().split("::"))) for l in f.readlines()]
             n=len(rows)
-            
+
             # define rating array (itemID,userID,rating)
             ratings=np.empty((n,),dtype=rating_t)
             for i,row in enumerate(rows):
-                ratings[i]=(row[1],row[0]-1,row[2])
+                ratings[i]=(row[1]-1,row[0]-1,row[2])
             movieIDs=np.unique(ratings['f0'])
             userIDs=np.unique(ratings['f1'])
-            
+
             movieIDs.sort()
             userIDs.sort()
             #map movieIDs
-            for i,rec in enumerate(ratings):
-                ratings[i]['f0']=movieIDs.searchsorted(rec['f0'])+1
-
+            ratings['f0'] = movieIDs.searchsorted(ratings['f0'])
             #original_movieIDs=movieIDs
-                
+
             movieIDs=np.unique(ratings['f0'])
             movieIDs.sort()
             return MovieLensDataset(movieIDs,userIDs,ratings)
@@ -124,7 +122,7 @@ class EloChessDataset(Dataset):
 
     @classmethod
     def loadCSV(cls,file):
-        """Loads the dataset via a csv file file. 
+        """Loads the dataset via a csv file file.
         """
         if not exists(file):
             raise ValueError("%s file does not exist" % file)
@@ -134,17 +132,17 @@ class EloChessDataset(Dataset):
             lineit = (l.split(",") for l in f.readlines())
 	    rows = [(int(l[1]),int(l[2]),float("0"+l[3])) for l in lineit]
             n=len(rows)
-            
+
             # define rating array (itemID,userID,rating)
             ratings=np.empty((n,),dtype=rating_t)
             for i,row in enumerate(rows):
                 ratings[i]=(row[0],row[1],row[2])
             movieIDs=np.unique(ratings['f0'])
             userIDs=np.unique(ratings['f1'])
-            
+
             movieIDs.sort()
-            userIDs.sort()            
-            
+            userIDs.sort()
+
             return EloChessDataset(movieIDs,userIDs,ratings)
         finally:
             f.close()
@@ -163,9 +161,9 @@ class NetflixDataset(Dataset):
 
     @classmethod
     def loadArray(cls,file):
-        """Loads the Netflix dataset from a serialized numpy record array. 
-        
-        """        
+        """Loads the Netflix dataset from a serialized numpy record array.
+
+        """
         f=open(file,'r')
         try:
             ratings=np.fromfile(f,dtype=rating_t)

@@ -22,7 +22,8 @@ train = train[:v]
 
 from rsvd import RSVD
 dims = (dataset.movieIDs().shape[0], dataset.userIDs().shape[0])
-model = RSVD.train(20, train, dims, probeArray=val,
+
+model = RSVD.train(20, train, dims, probeArray=val, maxEpochs=100,
                    learnRate=0.0005, regularization=0.005)
 
 sqerr=0.0
@@ -31,3 +32,6 @@ for movieID,userID,rating in test:
     sqerr += err * err
 sqerr /= test.shape[0]
 print "Test RMSE: ", np.sqrt(sqerr)
+
+import IPython
+IPython.embed()
